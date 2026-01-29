@@ -6,6 +6,7 @@ export interface ChartDataPoint {
 
 export interface ChatResponse {
   answer: string;
+  session_id: string;
   chart_data?: ChartDataPoint[] | null;
   chart_type?: string | null;
   sql_query?: string | null;

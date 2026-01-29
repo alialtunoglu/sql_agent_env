@@ -1,31 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: hsl(240 10% 3.9%);
-  --color-foreground: hsl(0 0% 98%);
+  /* Warm, Professional Data Palette (Amber & Slate) */
+  --color-background: hsl(222 47% 11%); /* Keep the deep dark background for contrast */
+  --color-foreground: hsl(36 30% 95%);   /* Warm white */
   
-  --color-primary: hsl(217 91% 60%);
-  --color-primary-foreground: hsl(222 47% 11%);
+  --color-primary: hsl(32 95% 55%);      /* Amber/Orange */
+  --color-primary-foreground: hsl(20 14% 4%);
   
-  --color-card: hsl(240 10% 4.5%);
-  --color-card-foreground: hsl(0 0% 98%);
+  --color-card: hsl(217 33% 15%);
+  --color-card-foreground: hsl(36 30% 95%);
 
-  --color-border: hsl(240 3.7% 15.9%);
-  --color-input: hsl(240 3.7% 15.9%);
+  --color-border: hsl(215 25% 27%);
+  --color-input: hsl(215 25% 27%);
+  
+  --color-accent: hsl(15 85% 65%);       /* Soft Red/Coral for secondary accents */
 }
 
 /* Custom Utilities */
 .glass {
-  background-color: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(251, 191, 36, 0.1); /* Subtle Amber border */
 }
 
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
+  /* Warmer, subtle mesh gradient */
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 40%);
+    radial-gradient(circle at 15% 50%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 30%, rgba(234, 88, 12, 0.05) 0%, transparent 40%);
   min-height: 100vh;
 }

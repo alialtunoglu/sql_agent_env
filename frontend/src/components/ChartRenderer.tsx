@@ -25,7 +25,7 @@ interface ChartRendererProps {
   title?: string;
 }
 
-const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+const COLORS = ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d1fae5'];
 
 export const ChartRenderer: React.FC<ChartRendererProps> = ({ data, type = 'bar', title }) => {
   if (!data || data.length === 0) return null;
@@ -39,11 +39,11 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ data, type = 'bar'
             <XAxis dataKey="name" stroke="#888" />
             <YAxis stroke="#888" />
             <Tooltip 
-              contentStyle={{ backgroundColor: '#1e1e24', border: 'none', borderRadius: '8px' }}
+              contentStyle={{ backgroundColor: 'hsl(217 33% 17%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
               itemStyle={{ color: '#fff' }}
             />
-            <Legend />
-            <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+            <Legend wrapperStyle={{ color: '#9ca3af' }} />
+            <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} dot={{ r: 5, fill: '#10b981' }} />
           </LineChart>
         );
       case 'pie':
@@ -73,15 +73,15 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ data, type = 'bar'
       default:
         return (
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-            <XAxis dataKey="name" stroke="#888" />
-            <YAxis stroke="#888" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+            <XAxis dataKey="name" stroke="#9ca3af" tick={{ fill: '#9ca3af' }} />
+            <YAxis stroke="#9ca3af" tick={{ fill: '#9ca3af' }} />
             <Tooltip 
-              contentStyle={{ backgroundColor: '#1e1e24', border: 'none', borderRadius: '8px' }}
-              cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+              contentStyle={{ backgroundColor: 'hsl(217 33% 17%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+              cursor={{ fill: 'rgba(16, 185, 129, 0.1)' }}
             />
-            <Legend />
-            <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            <Legend wrapperStyle={{ color: '#9ca3af' }} />
+            <Bar dataKey="value" fill="#10b981" radius={[8, 8, 0, 0]} />
           </BarChart>
         );
     }

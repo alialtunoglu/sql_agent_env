@@ -1,0 +1,261 @@
+{
+  "database_name": "Chinook",
+  "database_description": "Dijital müzik mağazası veritabanı. Müzik sanatçıları, albümler, parçalar, müşteriler ve satış bilgilerini içerir.",
+  "tables": {
+    "Artist": {
+      "description": "Müzik sanatçıları bilgilerini içerir",
+      "columns": {
+        "ArtistId": "Benzersiz sanatçı kimliği (Primary Key)",
+        "Name": "Sanatçı adı"
+      },
+      "example_queries": [
+        "En fazla albümü olan sanatçıları bul",
+        "Belirli bir sanatçının tüm albümlerini listele"
+      ]
+    },
+    "Album": {
+      "description": "Müzik albümleri. Her albüm bir sanatçıya aittir",
+      "columns": {
+        "AlbumId": "Benzersiz albüm kimliği (Primary Key)",
+        "Title": "Albüm başlığı",
+        "ArtistId": "Sanatçı kimliği (Foreign Key -> Artist.ArtistId)"
+      },
+      "relationships": [
+        "Artist: Album.ArtistId -> Artist.ArtistId (Many-to-One)"
+      ],
+      "example_queries": [
+        "En çok satan albümleri bul",
+        "Bir sanatçının tüm albümlerini göster"
+      ]
+    },
+    "Track": {
+      "description": "Müzik parçaları/şarkılar. Her parça bir albüme ve türe aittir",
+      "columns": {
+        "TrackId": "Benzersiz parça kimliği (Primary Key)",
+        "Name": "Parça adı",
+        "AlbumId": "Albüm kimliği (Foreign Key -> Album.AlbumId)",
+        "MediaTypeId": "Medya tipi kimliği (Foreign Key -> MediaType.MediaTypeId)",
+        "GenreId": "Tür kimliği (Foreign Key -> Genre.GenreId)",
+        "Composer": "Besteci adı",
+        "Milliseconds": "Parça süresi (milisaniye)",
+        "Bytes": "Dosya boyutu (byte)",
+        "UnitPrice": "Birim fiyat"
+      },
+      "relationships": [
+        "Album: Track.AlbumId -> Album.AlbumId (Many-to-One)",
+        "Genre: Track.GenreId -> Genre.GenreId (Many-to-One)",
+        "MediaType: Track.MediaTypeId -> MediaType.MediaTypeId (Many-to-One)"
+      ],
+      "business_rules": [
+        "UnitPrice genellikle 0.99 veya 1.99",
+        "Milliseconds'ı saniyeye çevirmek için 1000'e bölün",
+        "Bytes'ı MB'ye çevirmek için 1048576'ya bölün"
+      ],
+      "example_queries": [
+        "En uzun parçaları bul",
+        "En çok satılan şarkıları listele",
+        "Belirli bir türdeki tüm parçaları göster"
+      ]
+    },
+    "Genre": {
+      "description": "Müzik türleri (Rock, Jazz, Metal, vb.)",
+      "columns": {
+        "GenreId": "Benzersiz tür kimliği (Primary Key)",
+        "Name": "Tür adı"
+      },
+      "common_genres": [
+        "Rock (GenreId: 1)",
+        "Jazz (GenreId: 2)",
+        "Metal (GenreId: 3)",
+        "Alternative & Punk (GenreId: 4)",
+        "Latin (GenreId: 7)"
+      ],
+      "example_queries": [
+        "En popüler müzik türlerini bul",
+        "Türe göre satış istatistikleri"
+      ]
+    },
+    "MediaType": {
+      "description": "Medya formatları (MPEG, AAC, vb.)",
+      "columns": {
+        "MediaTypeId": "Benzersiz medya tipi kimliği (Primary Key)",
+        "Name": "Medya tipi adı"
+      },
+      "example_queries": [
+        "En çok kullanılan medya formatlarını göster"
+      ]
+    },
+    "Playlist": {
+      "description": "Kullanıcı çalma listeleri",
+      "columns": {
+        "PlaylistId": "Benzersiz çalma listesi kimliği (Primary Key)",
+        "Name": "Çalma listesi adı"
+      },
+      "relationships": [
+        "PlaylistTrack: Many-to-Many relationship via PlaylistTrack table"
+      ],
+      "example_queries": [
+        "En uzun çalma listelerini bul",
+        "Bir çalma listesindeki tüm parçaları göster"
+      ]
+    },
+    "PlaylistTrack": {
+      "description": "Çalma listeleri ile parçalar arasındaki ilişki tablosu (Many-to-Many)",
+      "columns": {
+        "PlaylistId": "Çalma listesi kimliği (Foreign Key -> Playlist.PlaylistId)",
+        "TrackId": "Parça kimliği (Foreign Key -> Track.TrackId)"
+      },
+      "relationships": [
+        "Playlist: PlaylistTrack.PlaylistId -> Playlist.PlaylistId (Many-to-One)",
+        "Track: PlaylistTrack.TrackId -> Track.TrackId (Many-to-One)"
+      ]
+    },
+    "Customer": {
+      "description": "Müşteri bilgileri",
+      "columns": {
+        "CustomerId": "Benzersiz müşteri kimliği (Primary Key)",
+        "FirstName": "Ad",
+        "LastName": "Soyad",
+        "Company": "Şirket adı",
+        "Address": "Adres",
+        "City": "Şehir",
+        "State": "Eyalet/Bölge",
+        "Country": "Ülke",
+        "PostalCode": "Posta kodu",
+        "Phone": "Telefon",
+        "Fax": "Faks",
+        "Email": "E-posta",
+        "SupportRepId": "Destek temsilcisi kimliği (Foreign Key -> Employee.EmployeeId)"
+      },
+      "relationships": [
+        "Employee: Customer.SupportRepId -> Employee.EmployeeId (Many-to-One)",
+        "Invoice: One-to-Many with Invoice table"
+      ],
+      "example_queries": [
+        "En çok harcama yapan müşterileri bul",
+        "Ülkelere göre müşteri dağılımı",
+        "En değerli müşterileri (lifetime value) göster"
+      ]
+    },
+    "Invoice": {
+      "description": "Satış faturaları",
+      "columns": {
+        "InvoiceId": "Benzersiz fatura kimliği (Primary Key)",
+        "CustomerId": "Müşteri kimliği (Foreign Key -> Customer.CustomerId)",
+        "InvoiceDate": "Fatura tarihi (YYYY-MM-DD HH:MM:SS formatında)",
+        "BillingAddress": "Fatura adresi",
+        "BillingCity": "Fatura şehri",
+        "BillingState": "Fatura eyaleti",
+        "BillingCountry": "Fatura ülkesi",
+        "BillingPostalCode": "Fatura posta kodu",
+        "Total": "Toplam tutar"
+      },
+      "relationships": [
+        "Customer: Invoice.CustomerId -> Customer.CustomerId (Many-to-One)",
+        "InvoiceLine: One-to-Many with InvoiceLine table"
+      ],
+      "business_rules": [
+        "InvoiceDate format: strftime('%Y-%m-%d', InvoiceDate) for date only",
+        "Aylık satışlar için: strftime('%Y-%m', InvoiceDate) kullanın",
+        "Yıllık satışlar için: strftime('%Y', InvoiceDate) kullanın",
+        "Total, o faturadaki tüm InvoiceLine toplamına eşittir"
+      ],
+      "example_queries": [
+        "Aylık satış trendlerini göster",
+        "En yüksek fatura tutarlarını bul",
+        "Ülkelere göre toplam satışları hesapla",
+        "2023 yılındaki tüm satışları listele"
+      ]
+    },
+    "InvoiceLine": {
+      "description": "Fatura satır kalemleri. Her satır bir faturada satılan bir parçayı temsil eder",
+      "columns": {
+        "InvoiceLineId": "Benzersiz fatura satırı kimliği (Primary Key)",
+        "InvoiceId": "Fatura kimliği (Foreign Key -> Invoice.InvoiceId)",
+        "TrackId": "Parça kimliği (Foreign Key -> Track.TrackId)",
+        "UnitPrice": "Birim fiyat",
+        "Quantity": "Miktar"
+      },
+      "relationships": [
+        "Invoice: InvoiceLine.InvoiceId -> Invoice.InvoiceId (Many-to-One)",
+        "Track: InvoiceLine.TrackId -> Track.TrackId (Many-to-One)"
+      ],
+      "business_rules": [
+        "Satır toplamı: UnitPrice * Quantity",
+        "En çok satan parçaları bulmak için Quantity toplamını kullanın"
+      ],
+      "example_queries": [
+        "En çok satan 10 parçayı bul",
+        "Bir müşterinin satın alma geçmişini göster"
+      ]
+    },
+    "Employee": {
+      "description": "Çalışan bilgileri. Hiyerarşik yapıda (ReportsTo ile)",
+      "columns": {
+        "EmployeeId": "Benzersiz çalışan kimliği (Primary Key)",
+        "LastName": "Soyad",
+        "FirstName": "Ad",
+        "Title": "Ünvan",
+        "ReportsTo": "Bağlı olduğu yönetici kimliği (Foreign Key -> Employee.EmployeeId)",
+        "BirthDate": "Doğum tarihi",
+        "HireDate": "İşe başlama tarihi",
+        "Address": "Adres",
+        "City": "Şehir",
+        "State": "Eyalet",
+        "Country": "Ülke",
+        "PostalCode": "Posta kodu",
+        "Phone": "Telefon",
+        "Fax": "Faks",
+        "Email": "E-posta"
+      },
+      "relationships": [
+        "Self-referencing: Employee.ReportsTo -> Employee.EmployeeId (hierarchical)",
+        "Customer: One-to-Many via Customer.SupportRepId"
+      ],
+      "example_queries": [
+        "Tüm çalışanları ve yöneticilerini listele",
+        "En başarılı satış temsilcilerini bul (müşteri sayısına göre)"
+      ]
+    }
+  },
+  "common_join_patterns": [
+    {
+      "description": "Sanatçı - Albüm - Parça ilişkisi",
+      "query": "SELECT Artist.Name, Album.Title, Track.Name FROM Artist JOIN Album ON Artist.ArtistId = Album.ArtistId JOIN Track ON Album.AlbumId = Track.AlbumId"
+    },
+    {
+      "description": "Müşteri - Fatura - Satış detayları",
+      "query": "SELECT Customer.FirstName, Customer.LastName, Invoice.Total FROM Customer JOIN Invoice ON Customer.CustomerId = Invoice.CustomerId"
+    },
+    {
+      "description": "En çok satan parçalar (satış miktarına göre)",
+      "query": "SELECT Track.Name, SUM(InvoiceLine.Quantity) as TotalSold FROM Track JOIN InvoiceLine ON Track.TrackId = InvoiceLine.TrackId GROUP BY Track.TrackId ORDER BY TotalSold DESC"
+    },
+    {
+      "description": "Türe göre satış analizi",
+      "query": "SELECT Genre.Name, COUNT(InvoiceLine.InvoiceLineId) as Sales FROM Genre JOIN Track ON Genre.GenreId = Track.GenreId JOIN InvoiceLine ON Track.TrackId = InvoiceLine.TrackId GROUP BY Genre.GenreId"
+    }
+  ],
+  "visualization_hints": [
+    {
+      "query_type": "time_series",
+      "description": "Zaman serisi verileri için line chart kullan (örn: aylık satışlar)",
+      "suggested_chart": "line"
+    },
+    {
+      "query_type": "comparison",
+      "description": "Karşılaştırmalar için bar chart kullan (örn: ülkelere göre satış)",
+      "suggested_chart": "bar"
+    },
+    {
+      "query_type": "distribution",
+      "description": "Dağılım ve oranlar için pie chart kullan (örn: tür bazında satış dağılımı)",
+      "suggested_chart": "pie"
+    },
+    {
+      "query_type": "ranking",
+      "description": "Sıralama için bar chart kullan (örn: top 10 parça)",
+      "suggested_chart": "bar"
+    }
+  ]
+}
