@@ -13,3 +13,11 @@ env/
 # Veritabanı (Opsiyonel - genelde binary dosyalar git'te tutulmaz ama demo için tutabilirsin)
 # Şimdilik Chinook değişmeyeceği için bunu yoruma alıyorum, git'e eklensin.
 # *.sqlite
+
+# Node
+node_modules/
+.next/
+dist/
+out/
+.DS_Store
+*.log
