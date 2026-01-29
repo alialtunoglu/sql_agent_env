@@ -1,5 +1,5 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
-from src.config import GOOGLE_API_KEY
+from app.core.config import GOOGLE_API_KEY
 
 def get_llm():
     """Yapılandırılmış LLM modelini döndürür."""

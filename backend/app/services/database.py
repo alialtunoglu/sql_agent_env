@@ -1,5 +1,5 @@
 from langchain_community.utilities import SQLDatabase
-from src.config import DB_PATH
+from app.core.config import DB_PATH
 
 def get_db():
     """Veritabanı bağlantı nesnesini döndürür."""
