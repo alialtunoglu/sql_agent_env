@@ -1,0 +1,15 @@
+# Python gereksizleri
+__pycache__/
+*.py[cod]
+
+# Ortam değişkenleri (ÇOK ÖNEMLİ - API Key burada)
+.env
+
+# Sanal ortam (Eğer klasör içindeyse)
+venv/
+env/
+.venv/
+
+# Veritabanı (Opsiyonel - genelde binary dosyalar git'te tutulmaz ama demo için tutabilirsin)
+# Şimdilik Chinook değişmeyeceği için bunu yoruma alıyorum, git'e eklensin.
+# *.sqlite
