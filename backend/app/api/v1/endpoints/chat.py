@@ -1,57 +1,69 @@
 from fastapi import APIRouter, HTTPException
 from app.models import ChatRequest, ChatResponse
-from app.services.agent import build_agent, load_chat_history_to_memory
+from app.services.agent import build_agent, load_chat_history
 import json
 import re
 import uuid
 from typing import Dict
-from langchain.memory import ConversationBufferMemory
+from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
 
 router = APIRouter()
 
-# Session bazlı memory store (in-memory)
+# Session bazlı chat history store (in-memory)
 # Production'da Redis veya database kullanılmalı
-session_memories: Dict[str, ConversationBufferMemory] = {}
+session_histories: Dict[str, BaseChatMessageHistory] = {}
 
-def get_or_create_session(session_id: str = None) -> tuple[str, ConversationBufferMemory]:
+def get_or_create_session(session_id: str = None) -> tuple[str, BaseChatMessageHistory]:
     """
     Session ID'yi kontrol eder veya yeni oluşturur.
     
     Returns:
-        (session_id, memory) tuple
+        (session_id, chat_history) tuple
     """
-    if session_id and session_id in session_memories:
-        return session_id, session_memories[session_id]
+    if session_id and session_id in session_histories:
+        return session_id, session_histories[session_id]
     
     # Yeni session oluştur
     new_session_id = session_id or str(uuid.uuid4())
-    new_memory = ConversationBufferMemory(
-        memory_key="chat_history",
-        return_messages=True,
-        output_key="output"
-    )
-    session_memories[new_session_id] = new_memory
-    return new_session_id, new_memory
+    new_history = InMemoryChatMessageHistory()
+    session_histories[new_session_id] = new_history
+    return new_session_id, new_history
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
         # Session yönetimi
-        session_id, memory = get_or_create_session(request.session_id)
+        session_id, chat_history = get_or_create_session(request.session_id)
         
-        # Eğer messages gönderildiyse, memory'yi güncelle
+        # Eğer messages gönderildiyse, history'yi güncelle
         if request.messages:
-            memory = load_chat_history_to_memory(
+            chat_history = load_chat_history(
                 [{"role": m.role, "content": m.content} for m in request.messages]
             )
-            session_memories[session_id] = memory
+            session_histories[session_id] = chat_history
         
-        # Agent'ı memory ile oluştur
-        agent = build_agent(memory)
+        # Agent'ı chat history ile oluştur
+        agent, _ = build_agent(chat_history)
         
         # Ajanı çalıştır
         result = agent.invoke({"input": request.query})
-        output_text = result['output']
+        
+        # Output'u düzgün al (list veya string olabilir)
+        output_text = result.get('output', '')
+        if isinstance(output_text, list):
+            # List ise, son text elementi al
+            output_text = ''
+            for item in result['output']:
+                if isinstance(item, dict) and 'text' in item:
+                    output_text += item['text'] + ' '
+                elif isinstance(item, str):
+                    output_text += item + ' '
+            output_text = output_text.strip()
+        
+        # Chat history'ye mesajları ekle
+        from langchain_core.messages import HumanMessage, AIMessage
+        chat_history.add_message(HumanMessage(content=request.query))
+        chat_history.add_message(AIMessage(content=str(output_text)))
         
         chart_data = None
         sql_query = None
@@ -66,9 +78,12 @@ async def chat(request: ChatRequest):
         # JSON verisini parse et
         # Format: CHART_JSON_START{...}CHART_JSON_END
         json_pattern = r"CHART_JSON_START(.*?)CHART_JSON_END"
-        match = re.search(json_pattern, output_text, re.DOTALL)
         
-        cleaned_answer = output_text
+        # output_text'in string olduğundan emin ol
+        output_str = str(output_text)
+        match = re.search(json_pattern, output_str, re.DOTALL)
+        
+        cleaned_answer = output_str
         if match:
             json_str = match.group(1)
             try:
@@ -78,7 +93,7 @@ async def chat(request: ChatRequest):
                      # Frontend'in beklediği formatta data gönder
                     chart_data = chart_info["data"]
                     # Answer'dan JSON bloğunu temizle, kullanıcıya ham JSON göstermeyelim
-                    cleaned_answer = output_text.replace(match.group(0), "").strip()
+                    cleaned_answer = output_str.replace(match.group(0), "").strip()
                     # Ek bilgi ekle
                     cleaned_answer += f"\n\n(Aşağıda {chart_info.get('title', 'Grafik')} grafiği görüntülenmektedir)"
             except json.JSONDecodeError:

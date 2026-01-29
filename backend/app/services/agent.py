@@ -1,30 +1,25 @@
 from langchain_community.agent_toolkits import create_sql_agent
-from langchain.memory import ConversationBufferMemory
-from langchain.schema import HumanMessage, AIMessage, SystemMessage
-from langchain.agents import AgentExecutor
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
 from app.services.database import get_db, generate_enhanced_schema_description
 from app.services.llm import get_llm
 from app.services.tools import chart_tool
 from typing import Optional, List, Dict
 
-def build_agent(memory: Optional[ConversationBufferMemory] = None):
+def build_agent(chat_history: Optional[BaseChatMessageHistory] = None):
     """
-    SQL Agent oluşturur. Memory parametresi ile konuşma geçmişi desteklenir.
+    SQL Agent oluşturur. Chat history ile konuşma geçmişi desteklenir.
     Schema metadata ile zenginleştirilmiş prompt kullanır.
     
     Args:
-        memory: ConversationBufferMemory instance. None ise yeni memory oluşturulur.
+        chat_history: Chat message history instance. None ise yeni oluşturulur.
     """
     db = get_db()
     llm = get_llm()
     
-    # Memory yoksa yeni oluştur
-    if memory is None:
-        memory = ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True,
-            output_key="output"
-        )
+    # Chat history yoksa yeni oluştur
+    if chat_history is None:
+        chat_history = InMemoryChatMessageHistory()
     
     # Schema metadata'yı al
     schema_description = generate_enhanced_schema_description()
@@ -57,34 +52,29 @@ sorgu sonucu sayısal veriler içeriyorsa, Chart_Data_Formatter aracını kullan
         verbose=True,
         max_iterations=15,  # Metadata ile daha karmaşık sorgular için artırıldı
         agent_executor_kwargs={
-            "memory": memory,
             "return_intermediate_steps": True
         },
         prefix=prefix_prompt
     )
     
-    return agent_executor
+    return agent_executor, chat_history
 
-def load_chat_history_to_memory(messages: List[Dict[str, str]]) -> ConversationBufferMemory:
+def load_chat_history(messages: List[Dict[str, str]]) -> BaseChatMessageHistory:
     """
-    Geçmiş mesajları memory'ye yükler.
+    Geçmiş mesajları chat history'ye yükler.
     
     Args:
         messages: [{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}]
     
     Returns:
-        ConversationBufferMemory instance
+        BaseChatMessageHistory instance
     """
-    memory = ConversationBufferMemory(
-        memory_key="chat_history",
-        return_messages=True,
-        output_key="output"
-    )
+    chat_history = InMemoryChatMessageHistory()
     
     for msg in messages:
         if msg["role"] == "user":
-            memory.chat_memory.add_message(HumanMessage(content=msg["content"]))
+            chat_history.add_message(HumanMessage(content=msg["content"]))
         elif msg["role"] == "assistant":
-            memory.chat_memory.add_message(AIMessage(content=msg["content"]))
+            chat_history.add_message(AIMessage(content=msg["content"]))
     
-    return memory
+    return chat_history
