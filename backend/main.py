@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import chat
+from app.api.v1.endpoints import chat, upload
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
@@ -44,6 +44,7 @@ app.add_middleware(
 
 # Router'ları ekle
 app.include_router(chat.router, prefix="/api/v1", tags=["Chat"])
+app.include_router(upload.router, prefix="/api/v1", tags=["Upload"])
 
 @app.get("/")
 def read_root():

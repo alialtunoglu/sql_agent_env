@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from app.models import ChatRequest, ChatResponse
 from app.services.agent import build_agent
 from app.services.memory import create_memory_backend, AbstractChatMemory
+from app.services.user_database import get_user_database_service
 from app.core.config import MEMORY_BACKEND, REDIS_HOST, REDIS_PORT, REDIS_DB, REDIS_PASSWORD
 import json
 import re
@@ -54,11 +55,19 @@ async def chat(request: ChatRequest):
         # Mevcut chat history'yi al
         chat_history = memory_backend.get_messages(session_id)
         
+        # Check if user has uploaded database
+        user_db_service = get_user_database_service()
+        user_db_path = user_db_service.get_user_database_path(session_id)
+        user_schema = user_db_service.generate_user_schema_description(session_id)
+        
         # Agent'ı chat history ve RAG ile oluştur
+        # If user has database, use it; otherwise use default Chinook
         agent, _ = build_agent(
             chat_history=chat_history,
             user_query=request.query,
-            use_rag=True
+            db_path=user_db_path,  # Will be None if no user database
+            user_schema=user_schema,  # Will be None if no user database
+            use_rag=(user_db_path is None)  # Use RAG only for default database
         )
         
         # Ajanı çalıştır

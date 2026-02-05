@@ -5,6 +5,7 @@ import { Send, RotateCcw } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { ChatBubble } from '@/components/ChatBubble';
+import FileUpload from '@/components/FileUpload';
 import { Message } from '@/types';
 import { sendMessage, getOrCreateSessionId, resetSession } from '@/lib/api';
 
@@ -141,9 +142,15 @@ export const ChatInterface = () => {
         </Button>
       </header>
 
+      {/* File Upload Section */}
+      <div className="px-4 pt-4">
+        <FileUpload sessionId={sessionId} onUploadSuccess={() => {
+          // Optionally add a system message when upload succeeds
+        }} />
+      </div>
+
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto mb-4 scrollbar-hide py-4 px-2">
-        {messages.map((msg) => (
+      <div className="flex-1 overflow-y-auto mb-4 scrollbar-hide py-4 px-2">{messages.map((msg) => (
           <ChatBubble key={msg.id} message={msg} />
         ))}
         {isLoading && (

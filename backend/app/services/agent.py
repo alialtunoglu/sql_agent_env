@@ -9,6 +9,7 @@ def build_agent(
     chat_history: Optional[List[BaseMessage]] = None,
     user_query: str = "",
     db_path: Optional[str] = None,
+    user_schema: Optional[str] = None,
     use_rag: bool = True
 ):
     """
@@ -19,6 +20,7 @@ def build_agent(
         chat_history: List of BaseMessage objects. None ise boş liste kullanılır.
         user_query: User's question (used for RAG schema retrieval)
         db_path: Custom database path. If None, uses default Chinook DB.
+        user_schema: User-uploaded database schema description. Takes precedence over RAG.
         use_rag: Whether to use RAG for schema retrieval (default: True)
     """
     db = get_db(db_path)
@@ -28,8 +30,12 @@ def build_agent(
     if chat_history is None:
         chat_history = []
     
-    # Schema description: Use RAG if enabled and query provided
-    if use_rag and user_query:
+    # Schema description: Priority order: user_schema > RAG > full schema
+    if user_schema:
+        # User uploaded database - use its schema
+        schema_description = user_schema
+        print("Using user-uploaded database schema")
+    elif use_rag and user_query:
         try:
             from app.services.schema_rag import get_schema_rag
             rag = get_schema_rag()

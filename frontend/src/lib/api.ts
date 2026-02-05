@@ -47,3 +47,58 @@ export async function sendMessage(query: string, sessionId?: string): Promise<Ch
 
   return response.json();
 }
+
+/**
+ * Upload CSV or Excel file
+ */
+export async function uploadFile(file: File, sessionId: string): Promise<any> {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await fetch(`${API_URL}/upload?session_id=${sessionId}`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'File upload failed');
+  }
+
+  return response.json();
+}
+
+/**
+ * Get database status for session
+ */
+export async function getDatabaseStatus(sessionId: string): Promise<any> {
+  const response = await fetch(`${API_URL}/database-status?session_id=${sessionId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to get database status');
+  }
+
+  return response.json();
+}
+
+/**
+ * Delete user's uploaded database
+ */
+export async function deleteDatabase(sessionId: string): Promise<void> {
+  const response = await fetch(`${API_URL}/database?session_id=${sessionId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to delete database');
+  }
+}
