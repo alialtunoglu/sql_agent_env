@@ -20,5 +20,7 @@ node_modules/
 dist/
 out/
 .DS_Store
-*.logbackend/data/chroma_db/
+*.log
+backend/data/chroma_db/
+backend/data/user_databases/
 backend/data/user_databases/
