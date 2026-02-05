@@ -1,46 +1,58 @@
 from fastapi import APIRouter, HTTPException
 from app.models import ChatRequest, ChatResponse
-from app.services.agent import build_agent, load_chat_history
+from app.services.agent import build_agent
+from app.services.memory import create_memory_backend, AbstractChatMemory
+from app.core.config import MEMORY_BACKEND, REDIS_HOST, REDIS_PORT, REDIS_DB, REDIS_PASSWORD
 import json
 import re
 import uuid
 from typing import Dict
-from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
+from langchain_core.messages import HumanMessage, AIMessage
 
 router = APIRouter()
 
-# Session bazlı chat history store (in-memory)
-# Production'da Redis veya database kullanılmalı
-session_histories: Dict[str, BaseChatMessageHistory] = {}
+# Initialize memory backend based on configuration
+try:
+    if MEMORY_BACKEND.lower() == "redis":
+        memory_backend: AbstractChatMemory = create_memory_backend(
+            backend_type="redis",
+            host=REDIS_HOST,
+            port=REDIS_PORT,
+            db=REDIS_DB,
+            password=REDIS_PASSWORD,
+        )
+        print(f"✓ Using Redis memory backend at {REDIS_HOST}:{REDIS_PORT}")
+    else:
+        memory_backend: AbstractChatMemory = create_memory_backend(backend_type="in-memory")
+        print("⚠ Using in-memory backend (not recommended for production)")
+except Exception as e:
+    print(f"⚠ Failed to initialize {MEMORY_BACKEND} backend: {e}")
+    print("⚠ Falling back to in-memory backend")
+    memory_backend: AbstractChatMemory = create_memory_backend(backend_type="in-memory")
 
-def get_or_create_session(session_id: str = None) -> tuple[str, BaseChatMessageHistory]:
+
+def get_or_create_session(session_id: str = None) -> str:
     """
     Session ID'yi kontrol eder veya yeni oluşturur.
     
     Returns:
-        (session_id, chat_history) tuple
+        session_id
     """
-    if session_id and session_id in session_histories:
-        return session_id, session_histories[session_id]
+    if session_id and memory_backend.session_exists(session_id):
+        return session_id
     
     # Yeni session oluştur
     new_session_id = session_id or str(uuid.uuid4())
-    new_history = InMemoryChatMessageHistory()
-    session_histories[new_session_id] = new_history
-    return new_session_id, new_history
+    return new_session_id
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
         # Session yönetimi
-        session_id, chat_history = get_or_create_session(request.session_id)
+        session_id = get_or_create_session(request.session_id)
         
-        # Eğer messages gönderildiyse, history'yi güncelle
-        if request.messages:
-            chat_history = load_chat_history(
-                [{"role": m.role, "content": m.content} for m in request.messages]
-            )
-            session_histories[session_id] = chat_history
+        # Mevcut chat history'yi al
+        chat_history = memory_backend.get_messages(session_id)
         
         # Agent'ı chat history ile oluştur
         agent, _ = build_agent(chat_history)
@@ -60,10 +72,14 @@ async def chat(request: ChatRequest):
                     output_text += item + ' '
             output_text = output_text.strip()
         
-        # Chat history'ye mesajları ekle
-        from langchain_core.messages import HumanMessage, AIMessage
-        chat_history.add_message(HumanMessage(content=request.query))
-        chat_history.add_message(AIMessage(content=str(output_text)))
+        # Chat history'ye mesajları ekle (Abstract memory layer kullanarak)
+        memory_backend.add_messages(
+            session_id,
+            [
+                HumanMessage(content=request.query),
+                AIMessage(content=str(output_text))
+            ]
+        )
         
         chart_data = None
         sql_query = None

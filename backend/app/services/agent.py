@@ -1,25 +1,24 @@
 from langchain_community.agent_toolkits import create_sql_agent
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
-from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, BaseMessage
 from app.services.database import get_db, generate_enhanced_schema_description
 from app.services.llm import get_llm
 from app.services.tools import chart_tool
 from typing import Optional, List, Dict
 
-def build_agent(chat_history: Optional[BaseChatMessageHistory] = None):
+def build_agent(chat_history: Optional[List[BaseMessage]] = None):
     """
     SQL Agent oluşturur. Chat history ile konuşma geçmişi desteklenir.
     Schema metadata ile zenginleştirilmiş prompt kullanır.
     
     Args:
-        chat_history: Chat message history instance. None ise yeni oluşturulur.
+        chat_history: List of BaseMessage objects. None ise boş liste kullanılır.
     """
     db = get_db()
     llm = get_llm()
     
-    # Chat history yoksa yeni oluştur
+    # Chat history yoksa boş liste kullan
     if chat_history is None:
-        chat_history = InMemoryChatMessageHistory()
+        chat_history = []
     
     # Schema metadata'yı al
     schema_description = generate_enhanced_schema_description()
@@ -58,23 +57,3 @@ sorgu sonucu sayısal veriler içeriyorsa, Chart_Data_Formatter aracını kullan
     )
     
     return agent_executor, chat_history
-
-def load_chat_history(messages: List[Dict[str, str]]) -> BaseChatMessageHistory:
-    """
-    Geçmiş mesajları chat history'ye yükler.
-    
-    Args:
-        messages: [{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}]
-    
-    Returns:
-        BaseChatMessageHistory instance
-    """
-    chat_history = InMemoryChatMessageHistory()
-    
-    for msg in messages:
-        if msg["role"] == "user":
-            chat_history.add_message(HumanMessage(content=msg["content"]))
-        elif msg["role"] == "assistant":
-            chat_history.add_message(AIMessage(content=msg["content"]))
-    
-    return chat_history
