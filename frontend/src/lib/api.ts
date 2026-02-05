@@ -27,6 +27,29 @@ export function resetSession(): void {
   localStorage.removeItem(SESSION_STORAGE_KEY);
 }
 
+/**
+ * Chat history'yi backend'den çek
+ */
+export async function getChatHistory(sessionId: string): Promise<any> {
+  try {
+    const response = await fetch(`${API_URL}/chat-history?session_id=${sessionId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch chat history');
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching chat history:', error);
+    return { messages: [], count: 0 };
+  }
+}
+
 export async function sendMessage(query: string, sessionId?: string): Promise<ChatResponse> {
   const activeSessionId = sessionId || getOrCreateSessionId();
   

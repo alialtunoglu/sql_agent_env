@@ -3,7 +3,7 @@ from app.models import ChatRequest, ChatResponse, ExecuteSQLRequest, ExecuteSQLR
 from app.services.agent import build_agent
 from app.services.memory import create_memory_backend, AbstractChatMemory
 from app.services.user_database import get_user_database_service
-from app.core.config import MEMORY_BACKEND, REDIS_HOST, REDIS_PORT, REDIS_DB, REDIS_PASSWORD
+from app.core.config import MEMORY_BACKEND, REDIS_HOST, REDIS_PORT, REDIS_DB, REDIS_PASSWORD, DB_PATH
 import json
 import re
 import uuid
@@ -33,6 +33,37 @@ except Exception as e:
     memory_backend: AbstractChatMemory = create_memory_backend(backend_type="in-memory")
 
 
+@router.get("/chat-history")
+async def get_chat_history(session_id: str):
+    """
+    Retrieve chat history for a session.
+    Used to restore conversation when page is refreshed.
+    """
+    try:
+        messages = memory_backend.get_messages(session_id)
+        
+        # Convert LangChain messages to frontend format
+        formatted_messages = []
+        for msg in messages:
+            formatted_messages.append({
+                "role": "user" if msg.__class__.__name__ == "HumanMessage" else "assistant",
+                "content": msg.content
+            })
+        
+        return {
+            "session_id": session_id,
+            "messages": formatted_messages,
+            "count": len(formatted_messages)
+        }
+    except Exception as e:
+        print(f"Error retrieving chat history: {e}")
+        return {
+            "session_id": session_id,
+            "messages": [],
+            "count": 0
+        }
+
+
 def get_or_create_session(session_id: str = None) -> str:
     """
     Session ID'yi kontrol eder veya yeni oluşturur.
@@ -52,9 +83,11 @@ async def chat(request: ChatRequest):
     try:
         # Session yönetimi
         session_id = get_or_create_session(request.session_id)
+        print(f"📝 Session ID: {session_id}")
         
         # Mevcut chat history'yi al
         chat_history = memory_backend.get_messages(session_id)
+        print(f"📚 Retrieved {len(chat_history)} messages from memory")
         
         # Check if user has uploaded database
         user_db_service = get_user_database_service()
@@ -94,23 +127,28 @@ async def chat(request: ChatRequest):
                 AIMessage(content=str(output_text))
             ]
         )
+        print(f"💾 Saved messages to memory for session {session_id}")
+        print(f"   User: {request.query[:50]}...")
+        print(f"   AI: {str(output_text)[:50]}...")
+        
+        # output_text'in string olduğundan emin ol
+        output_str = str(output_text)
         
         chart_data = None
         sql_query = None
+        requires_approval = False
         
-        # intermediate_steps'ten SQL query çıkar
-        if 'intermediate_steps' in result:
-            for step in result['intermediate_steps']:
-                if hasattr(step[0], 'tool') and 'sql' in step[0].tool.lower():
-                    sql_query = step[1]
-                    break
+        # Extract SQL query from output using regex (looks for ```sql code blocks)
+        sql_pattern = r"```sql\s*([^`]+)\s*```"
+        sql_match = re.search(sql_pattern, output_str, re.IGNORECASE | re.DOTALL)
+        
+        if sql_match:
+            sql_query = sql_match.group(1).strip()
+            requires_approval = True  # User must approve before execution
         
         # JSON verisini parse et
         # Format: CHART_JSON_START{...}CHART_JSON_END
         json_pattern = r"CHART_JSON_START(.*?)CHART_JSON_END"
-        
-        # output_text'in string olduğundan emin ol
-        output_str = str(output_text)
         match = re.search(json_pattern, output_str, re.DOTALL)
         
         cleaned_answer = output_str
@@ -134,15 +172,30 @@ async def chat(request: ChatRequest):
             session_id=session_id,
             chart_data=chart_data,
             sql_query=sql_query,
-            requires_approval=False  # Auto-executed by agent
+            requires_approval=requires_approval  # True if SQL needs user approval
         )
         
     except Exception as e:
         print(f"Hata: {e}")
         import traceback
         traceback.print_exc()
+        
+        # Hata durumunda bile memory'ye kaydet
+        try:
+            error_message = f"Bir hata oluştu: {str(e)}"
+            memory_backend.add_messages(
+                request.session_id or str(uuid.uuid4()),
+                [
+                    HumanMessage(content=request.query),
+                    AIMessage(content=error_message)
+                ]
+            )
+            print(f"💾 Saved error to memory")
+        except:
+            pass  # Ignore memory errors during error handling
+        
         return ChatResponse(
-            answer="Bir hata oluştu.",
+            answer=f"Bir hata oluştu: {str(e)}",
             session_id=request.session_id or str(uuid.uuid4()),
             error=str(e)
         )
@@ -186,21 +239,37 @@ async def execute_sql(request: ExecuteSQLRequest):
         
         db = SQLDatabase.from_uri(db_uri)
         
-        # Execute query
-        result = db.run(request.sql_query)
+        # Execute query using direct connection for better result parsing
+        import sqlite3
+        conn = sqlite3.connect(user_db_path if user_db_path else DB_PATH)
+        conn.row_factory = sqlite3.Row  # Enable column name access
+        cursor = conn.cursor()
         
-        # Parse result (typically comes as string)
-        row_count = 0
-        if result:
-            # Try to count rows (rough estimate)
-            lines = result.strip().split('\n')
-            row_count = max(0, len(lines) - 1)  # Exclude header
+        cursor.execute(request.sql_query)
+        rows = cursor.fetchall()
+        
+        # Convert to list of dicts
+        result_data = [dict(row) for row in rows]
+        row_count = len(result_data)
+        
+        conn.close()
+        
+        # Format result message
+        result_summary = f"✓ Sorgu başarıyla çalıştırıldı. {row_count} satır döndü."
+        
+        # Add first few rows as preview if results exist
+        if row_count > 0:
+            result_summary += "\n\nSonuçlar:"
+            for i, row in enumerate(result_data[:5]):  # Show first 5 rows
+                result_summary += f"\n{i+1}. {row}"
+            if row_count > 5:
+                result_summary += f"\n... ve {row_count - 5} satır daha"
         
         return ExecuteSQLResponse(
             success=True,
-            message=f"Sorgu başarıyla çalıştırıldı. {row_count} satır döndü.",
+            message=result_summary,
             row_count=row_count,
-            chart_data=None  # Could be enhanced to auto-generate chart
+            chart_data=result_data if row_count > 0 else None  # Return raw data for potential charting
         )
         
     except HTTPException:

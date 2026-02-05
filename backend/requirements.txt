@@ -1,6 +1,7 @@
 langchain
 langchain-community
 langchain-google-genai
+langchain-ollama>=0.1.0
 langchain-core
 pandas
 matplotlib

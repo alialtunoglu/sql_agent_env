@@ -8,10 +8,17 @@ import json
 from typing import List, Dict, Any, Optional
 import chromadb
 from chromadb.config import Settings
-from langchain.embeddings import GoogleGenerativeAIEmbeddings
-from langchain.vectorstores import Chroma
-from langchain.schema import Document
-from app.core.config import CHROMA_PERSIST_DIRECTORY, GOOGLE_API_KEY, BASE_DIR
+from langchain_community.vectorstores import Chroma
+from langchain_core.documents import Document
+from app.services.llm_factory import LLMFactory
+from app.core.config import (
+    CHROMA_PERSIST_DIRECTORY, 
+    BASE_DIR,
+    LLM_BACKEND,
+    GOOGLE_API_KEY,
+    OLLAMA_BASE_URL,
+    OLLAMA_EMBEDDING_MODEL
+)
 
 
 class SchemaRAG:
@@ -27,10 +34,19 @@ class SchemaRAG:
     ):
         self.persist_directory = persist_directory
         self.collection_name = collection_name
-        self.embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001",
-            google_api_key=GOOGLE_API_KEY
-        )
+        
+        # Use factory to create embeddings based on backend
+        if LLM_BACKEND.lower() == "gemini":
+            self.embeddings = LLMFactory.create_embedding_model(
+                backend="gemini",
+                api_key=GOOGLE_API_KEY
+            )
+        else:  # ollama
+            self.embeddings = LLMFactory.create_embedding_model(
+                backend="ollama",
+                base_url=OLLAMA_BASE_URL,
+                embedding_model=OLLAMA_EMBEDDING_MODEL
+            )
         
         # Ensure persist directory exists
         os.makedirs(persist_directory, exist_ok=True)

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { ChatBubble } from '@/components/ChatBubble';
 import FileUpload from '@/components/FileUpload';
 import { Message } from '@/types';
-import { sendMessage, getOrCreateSessionId, resetSession } from '@/lib/api';
+import { sendMessage, getOrCreateSessionId, resetSession, getChatHistory } from '@/lib/api';
 
 export const ChatInterface = () => {
   const [query, setQuery] = useState('');
@@ -46,9 +46,52 @@ export const ChatInterface = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Session ID'yi initialize et
+  // Session ID'yi initialize et ve chat history'yi yükle
   useEffect(() => {
-    setSessionId(getOrCreateSessionId());
+    const initSession = async () => {
+      const sid = getOrCreateSessionId();
+      setSessionId(sid);
+      
+      // Redis'ten önceki mesajları çek
+      try {
+        const history = await getChatHistory(sid);
+        
+        if (history.messages && history.messages.length > 0) {
+          console.log(`📚 Loaded ${history.count} messages from history`);
+          
+          // Backend'den gelen mesajları frontend formatına çevir
+          const loadedMessages: Message[] = history.messages.map((msg: any, index: number) => ({
+            id: `history-${index}`,
+            role: msg.role,
+            content: msg.content,
+            // SQL query ve chart data parse edilebilir (gelecekte)
+          }));
+          
+          setMessages(loadedMessages);
+        } else {
+          // Yeni session - welcome message göster
+          setMessages([
+            {
+              id: 'welcome',
+              role: 'assistant',
+              content: 'Merhaba! Ben sizin SQL Veri Analistinizim. Veritabanınızla ilgili herhangi bir soruyu sorabilirsiniz. Örn: "En çok satan 5 albüm hangisi?"'
+            }
+          ]);
+        }
+      } catch (error) {
+        console.error('Failed to load chat history:', error);
+        // Hata durumunda welcome message göster
+        setMessages([
+          {
+            id: 'welcome',
+            role: 'assistant',
+            content: 'Merhaba! Ben sizin SQL Veri Analistinizim. Veritabanınızla ilgili herhangi bir soruyu sorabilirsiniz.'
+          }
+        ]);
+      }
+    };
+    
+    initSession();
   }, []);
 
   const scrollToBottom = () => {

@@ -1,14 +1,28 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
-from app.core.config import GOOGLE_API_KEY
+from app.services.llm_factory import LLMFactory
+from app.core.config import (
+    LLM_BACKEND, 
+    GOOGLE_API_KEY, 
+    OLLAMA_BASE_URL, 
+    OLLAMA_MODEL
+)
 
 def get_llm():
-    """Yapılandırılmış LLM modelini döndürür."""
-    if not GOOGLE_API_KEY:
-        raise ValueError("GOOGLE_API_KEY .env dosyasında bulunamadı!")
-    
-    return ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
-        temperature=0, # SQL sorguları için 0 olması önemlidir
-        google_api_key=GOOGLE_API_KEY,
-        convert_system_message_to_human=True
-    )
+    """
+    Yapılandırılmış LLM modelini döndürür.
+    Backend type (Gemini/Ollama) config'den okunur.
+    """
+    if LLM_BACKEND.lower() == "gemini":
+        if not GOOGLE_API_KEY:
+            raise ValueError("GOOGLE_API_KEY .env dosyasında bulunamadı!")
+        return LLMFactory.create_chat_model(
+            backend="gemini",
+            api_key=GOOGLE_API_KEY,
+            model="gemini-2.5-flash"
+        )
+    else:  # ollama
+        print(f"✓ Using Ollama LLM: {OLLAMA_MODEL} at {OLLAMA_BASE_URL}")
+        return LLMFactory.create_chat_model(
+            backend="ollama",
+            base_url=OLLAMA_BASE_URL,
+            model=OLLAMA_MODEL
+        )

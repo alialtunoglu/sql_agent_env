@@ -56,17 +56,30 @@ def build_agent(
 
 ## GÖREV KURALLARI:
 1. Kullanıcının sorusunu dikkatlice analiz et ve önceki konuşma bağlamını (chat history) dikkate al
-2. Uygun SQL sorgusu yaz ve çalıştır
-3. Sonuçları kullanıcı dostu bir dilde açıkla
-4. Eğer kullanıcı görselleştirme isterse (grafik, chart, vb.) veya veri görselleştirmeye uygunsa, MUTLAKA Chart_Data_Formatter aracını kullan
+2. Uygun SQL sorgusunu YAZ ama ÇALIŞTIRMA - sadece SQL kodunu açıkla ve öner
+3. SQL sorgusunu şu formatta sun:
+   ```sql
+   SELECT ... FROM ... WHERE ...
+   ```
+4. SQL'den sonra kısa bir açıklama yap: "Bu sorgu şunu yapar..."
 5. Tarih sorgularında SQLite tarih fonksiyonlarını kullan: strftime('%Y-%m-%d', column_name)
 6. Türkçe sütun adları için tırnak işareti kullanmayı unutma
 
-## GÖRSELLEŞTİRME KURALI:
-Kullanıcı "göster", "grafik", "trend", "dağılım", "karşılaştır" gibi kelimeler kullanıyorsa veya 
-sorgu sonucu sayısal veriler içeriyorsa, Chart_Data_Formatter aracını kullanarak grafik verisi oluştur.
+## ÖNEMLİ: SORGUYU ÇALIŞTIRMA!
+Kullanıcı SQL sorgusunu onayladıktan sonra sistem otomatik olarak çalıştıracak.
+Senin görevin sadece DOĞRU SQL SORGUSU YAZMAK ve AÇIKLAMAK.
 
-Önce SQL sorgusunu çalıştır, sonra sonuçları Chart_Data_Formatter'a uygun formatta gönder.
+Örnek:
+Kullanıcı: "Kaç kişi hayatta kaldı?"
+Cevap: "İşte ihtiyacınız olan SQL sorgusu:
+
+```sql
+SELECT COUNT(*) AS hayatta_kalan_sayisi
+FROM train
+WHERE Survived = 1;
+```
+
+Bu sorgu, 'train' tablosundaki 'Survived' sütununda 1 değeri olan (hayatta kalanlar) kayıtları sayar."
 """
 
     agent_executor = create_sql_agent(
