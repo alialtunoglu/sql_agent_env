@@ -17,30 +17,6 @@ export const ChatInterface = () => {
       id: 'welcome',
       role: 'assistant',
       content: 'Merhaba! Ben sizin SQL Veri Analistinizim. Veritabanınızla ilgili herhangi bir soruyu sorabilirsiniz. Örn: "En çok satan 5 albüm hangisi?"'
-    },
-    {
-      id: 'demo-query',
-      role: 'user',
-      content: '2023 yılında aylık satış trendlerini göster'
-    },
-    {
-      id: 'demo-response',
-      role: 'assistant',
-      content: '2023 yılı için aylık satış verilerini analiz ettim. Aşağıda grafikte görüldüğü üzere, en yüksek satış Aralık ayında gerçekleşmiş.',
-      chartData: [
-        { name: 'Ocak', value: 4200 },
-        { name: 'Şubat', value: 3800 },
-        { name: 'Mart', value: 5100 },
-        { name: 'Nisan', value: 4600 },
-        { name: 'Mayıs', value: 5400 },
-        { name: 'Haziran', value: 4900 },
-        { name: 'Temmuz', value: 5800 },
-        { name: 'Ağustos', value: 6200 },
-        { name: 'Eylül', value: 5500 },
-        { name: 'Ekim', value: 6800 },
-        { name: 'Kasım', value: 7200 },
-        { name: 'Aralık', value: 8900 }
-      ]
     }
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -157,7 +133,15 @@ export const ChatInterface = () => {
       setIsLoading(false);
     }
   };
-
+  const handleResultMessage = (content: string, chartData?: any) => {
+    const resultMessage: Message = {
+      id: `result-${Date.now()}`,
+      role: 'assistant',
+      content: content,
+      chartData: chartData
+    };
+    setMessages(prev => [...prev, resultMessage]);
+  };
   return (
     <div className="flex flex-col h-screen max-w-4xl mx-auto p-4 md:p-6">
       {/* Header */}
@@ -196,7 +180,11 @@ export const ChatInterface = () => {
 
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto mb-4 scrollbar-hide py-4 px-2">{messages.map((msg) => (
-          <ChatBubble key={msg.id} message={msg} />
+          <ChatBubble 
+            key={msg.id} 
+            message={msg}
+            onResultMessage={handleResultMessage}
+          />
         ))}
         {isLoading && (
           <div className="flex justify-start mb-6">

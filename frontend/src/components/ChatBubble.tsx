@@ -2,6 +2,7 @@
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import { Message } from '@/types';
 import { ChartRenderer } from './ChartRenderer';
@@ -11,9 +12,10 @@ import { getOrCreateSessionId } from '@/lib/api';
 
 interface ChatBubbleProps {
   message: Message;
+  onResultMessage?: (content: string, chartData?: any) => void;
 }
 
-export const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
+export const ChatBubble: React.FC<ChatBubbleProps> = ({ message, onResultMessage }) => {
   const isAssistant = message.role === 'assistant';
 
   return (
@@ -36,8 +38,19 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
                : "bg-primary text-primary-foreground rounded-tr-none"
            )}>
              <ReactMarkdown 
+                remarkPlugins={[remarkGfm]}
                 components={{
-                  code: ({node, ...props}) => <code className="bg-black/30 px-1 py-0.5 rounded text-xs font-mono" {...props} />
+                  code: ({node, ...props}) => <code className="bg-black/30 px-1 py-0.5 rounded text-xs font-mono" {...props} />,
+                  table: ({node, ...props}) => (
+                    <div className="overflow-x-auto my-4">
+                      <table className="min-w-full divide-y divide-gray-700 border border-gray-700 rounded-lg" {...props} />
+                    </div>
+                  ),
+                  thead: ({node, ...props}) => <thead className="bg-gray-800/50" {...props} />,
+                  tbody: ({node, ...props}) => <tbody className="divide-y divide-gray-700/50" {...props} />,
+                  tr: ({node, ...props}) => <tr className="hover:bg-gray-800/30 transition-colors" {...props} />,
+                  th: ({node, ...props}) => <th className="px-4 py-2 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider" {...props} />,
+                  td: ({node, ...props}) => <td className="px-4 py-2 text-sm text-gray-100" {...props} />
                 }}
              >
                {message.content}
@@ -58,7 +71,12 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
                  initialSql={message.sqlQuery} 
                  sessionId={getOrCreateSessionId()}
                  onExecutionComplete={(result) => {
-                   console.log('SQL execution completed:', result);
+                   if (result.success && result.message) {
+                     // Notify parent to add result as new message
+                     if (onResultMessage) {
+                       onResultMessage(result.message, result.chart_data);
+                     }
+                   }
                  }}
                />
              </div>

@@ -17,9 +17,11 @@ export default function FileUpload({ sessionId, onUploadSuccess }: FileUploadPro
   const [databaseInfo, setDatabaseInfo] = useState<any>(null);
   const [showUploadSection, setShowUploadSection] = useState(false);
 
-  // Check database status on mount
+  // Check database status on mount (only if sessionId exists)
   React.useEffect(() => {
-    checkDatabaseStatus();
+    if (sessionId) {
+      checkDatabaseStatus();
+    }
   }, [sessionId]);
 
   const checkDatabaseStatus = async () => {

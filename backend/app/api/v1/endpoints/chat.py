@@ -254,22 +254,58 @@ async def execute_sql(request: ExecuteSQLRequest):
         
         conn.close()
         
-        # Format result message
-        result_summary = f"✓ Sorgu başarıyla çalıştırıldı. {row_count} satır döndü."
+        # Format result as markdown table
+        result_summary = f"✓ Sorgu başarıyla çalıştırıldı. **{row_count} satır** döndü.\n\n"
         
-        # Add first few rows as preview if results exist
+        chart_data = None
+        
         if row_count > 0:
-            result_summary += "\n\nSonuçlar:"
-            for i, row in enumerate(result_data[:5]):  # Show first 5 rows
-                result_summary += f"\n{i+1}. {row}"
-            if row_count > 5:
-                result_summary += f"\n... ve {row_count - 5} satır daha"
+            # Create markdown table
+            columns = list(result_data[0].keys())
+            
+            # Table header
+            result_summary += "| " + " | ".join(columns) + " |\n"
+            result_summary += "|" + "---|" * len(columns) + "\n"
+            
+            # Table rows (show max 10 rows)
+            display_rows = min(10, row_count)
+            for row in result_data[:display_rows]:
+                result_summary += "| " + " | ".join(str(v) for v in row.values()) + " |\n"
+            
+            if row_count > 10:
+                result_summary += f"\n*... ve {row_count - 10} satır daha*"
+            
+            # Auto-generate chart data if suitable (2 columns, second is numeric)
+            if len(columns) == 2:
+                try:
+                    # Check if second column is numeric
+                    first_val = result_data[0][columns[1]]
+                    if isinstance(first_val, (int, float)):
+                        chart_data = [
+                            {"name": str(row[columns[0]]), "value": float(row[columns[1]])}
+                            for row in result_data[:10]  # Max 10 bars for chart
+                        ]
+                except:
+                    pass  # If conversion fails, no chart
+        
+        # Save to chat history
+        try:
+            memory_backend.add_messages(
+                request.session_id,
+                [
+                    HumanMessage(content=f"Şu SQL sorgusunu çalıştırdım:\n```sql\n{request.sql_query}\n```"),
+                    AIMessage(content=result_summary)
+                ]
+            )
+            print(f"💾 Saved SQL execution results to memory for session {request.session_id}")
+        except Exception as mem_error:
+            print(f"⚠ Failed to save to memory: {mem_error}")
         
         return ExecuteSQLResponse(
             success=True,
             message=result_summary,
             row_count=row_count,
-            chart_data=result_data if row_count > 0 else None  # Return raw data for potential charting
+            chart_data=chart_data  # Auto-generated chart or None
         )
         
     except HTTPException:
