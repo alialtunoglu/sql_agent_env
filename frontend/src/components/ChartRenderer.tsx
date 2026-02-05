@@ -100,12 +100,29 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ data, type = 'bar'
       case 'bar':
       default:
         return (
-          <BarChart data={data}>
+          <BarChart
+            data={data}
+            margin={{ top: 10, right: 16, bottom: 48, left: 8 }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="name" stroke="#9ca3af" tick={{ fill: '#9ca3af' }} />
+            <XAxis
+              dataKey="name"
+              stroke="#9ca3af"
+              tick={{ fill: '#4b5563', fontSize: 10 }}
+              angle={-30}
+              textAnchor="end"
+              height={60}
+            />
             <YAxis stroke="#9ca3af" tick={{ fill: '#9ca3af' }} />
             <Tooltip 
-              contentStyle={{ backgroundColor: 'hsl(217 33% 17%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+              contentStyle={{ 
+                backgroundColor: 'hsl(217 33% 17%)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '12px',
+                color: '#f9fafb'
+              }}
+              itemStyle={{ color: '#f9fafb' }}
+              labelStyle={{ color: '#e5e7eb' }}
               cursor={{ fill: 'rgba(16, 185, 129, 0.1)' }}
             />
             <Legend wrapperStyle={{ color: '#9ca3af' }} />

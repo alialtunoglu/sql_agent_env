@@ -24,7 +24,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message, onResultMessage
         {/* Avatar */}
         <div className={cn(
           "flex items-center justify-center w-8 h-8 rounded-full shrink-0",
-          isAssistant ? "bg-primary/20 text-primary mr-3" : "bg-white/10 text-white ml-3"
+          isAssistant ? "bg-blue-100 text-blue-600 mr-3" : "bg-gray-200 text-gray-700 ml-3"
         )}>
           {isAssistant ? <Bot size={18} /> : <User size={18} />}
         </div>
@@ -34,8 +34,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message, onResultMessage
            <div className={cn(
              "p-4 rounded-2xl text-sm leading-relaxed",
              isAssistant 
-               ? "bg-white/5 border border-white/5 text-gray-100 rounded-tl-none" 
-               : "bg-primary text-primary-foreground rounded-tr-none"
+               ? "bg-white border border-gray-200 text-gray-800 rounded-tl-none shadow-sm" 
+               : "bg-blue-500 text-white rounded-tr-none shadow-sm"
            )}>
              <ReactMarkdown 
                 remarkPlugins={[remarkGfm]}
@@ -43,14 +43,24 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message, onResultMessage
                   code: ({node, ...props}) => <code className="bg-black/30 px-1 py-0.5 rounded text-xs font-mono" {...props} />,
                   table: ({node, ...props}) => (
                     <div className="overflow-x-auto my-4">
-                      <table className="min-w-full divide-y divide-gray-700 border border-gray-700 rounded-lg" {...props} />
+                      <table className="min-w-full border border-gray-200 rounded-lg divide-y divide-gray-200 text-sm" {...props} />
                     </div>
                   ),
-                  thead: ({node, ...props}) => <thead className="bg-gray-800/50" {...props} />,
-                  tbody: ({node, ...props}) => <tbody className="divide-y divide-gray-700/50" {...props} />,
-                  tr: ({node, ...props}) => <tr className="hover:bg-gray-800/30 transition-colors" {...props} />,
-                  th: ({node, ...props}) => <th className="px-4 py-2 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider" {...props} />,
-                  td: ({node, ...props}) => <td className="px-4 py-2 text-sm text-gray-100" {...props} />
+                  thead: ({node, ...props}) => <thead className="bg-gray-100" {...props} />,
+                  tbody: ({node, ...props}) => <tbody className="divide-y divide-gray-200" {...props} />,
+                  tr: ({node, ...props}) => <tr className="hover:bg-gray-50 transition-colors" {...props} />,
+                  th: ({node, ...props}) => (
+                    <th
+                      className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"
+                      {...props}
+                    />
+                  ),
+                  td: ({node, ...props}) => (
+                    <td
+                      className="px-4 py-2 text-sm text-gray-800"
+                      {...props}
+                    />
+                  )
                 }}
              >
                {message.content}

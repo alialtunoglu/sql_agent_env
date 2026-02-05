@@ -1,33 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  /* Warm, Professional Data Palette (Amber & Slate) */
-  --color-background: hsl(222 47% 11%); /* Keep the deep dark background for contrast */
-  --color-foreground: hsl(36 30% 95%);   /* Warm white */
+  /* Natural, Professional Palette - Clean & User-Friendly */
+  --color-background: hsl(210 20% 98%);  /* Soft off-white */
+  --color-foreground: hsl(215 25% 15%);  /* Deep charcoal */
   
-  --color-primary: hsl(32 95% 55%);      /* Amber/Orange */
-  --color-primary-foreground: hsl(20 14% 4%);
+  --color-primary: hsl(217 91% 60%);     /* Calm blue */
+  --color-primary-foreground: hsl(0 0% 100%);
   
-  --color-card: hsl(217 33% 15%);
-  --color-card-foreground: hsl(36 30% 95%);
+  --color-card: hsl(0 0% 100%);          /* Pure white cards */
+  --color-card-foreground: hsl(215 25% 15%);
 
-  --color-border: hsl(215 25% 27%);
-  --color-input: hsl(215 25% 27%);
+  --color-border: hsl(214 15% 88%);      /* Subtle gray border */
+  --color-input: hsl(214 15% 92%);
   
-  --color-accent: hsl(15 85% 65%);       /* Soft Red/Coral for secondary accents */
+  --color-accent: hsl(142 76% 36%);      /* Natural green accent */
+  --color-muted: hsl(214 15% 95%);       /* Light gray background */
+  --color-muted-foreground: hsl(215 15% 45%);
 }
 
 /* Custom Utilities */
 .glass {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(251, 191, 36, 0.1); /* Subtle Amber border */
+  border: 1px solid hsl(214 15% 88%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 body {
-  background-color: var(--color-background);
+  background: linear-gradient(135deg, hsl(210 20% 98%) 0%, hsl(214 20% 96%) 100%);
   color: var(--color-foreground);
-  /* Warmer, subtle mesh gradient */
   background-image: 
     radial-gradient(circle at 15% 50%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
     radial-gradient(circle at 85% 30%, rgba(234, 88, 12, 0.05) 0%, transparent 40%);

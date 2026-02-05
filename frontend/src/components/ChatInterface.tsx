@@ -147,27 +147,27 @@ export const ChatInterface = () => {
       {/* Header */}
       <header className="flex items-center justify-between mb-6 p-4 rounded-2xl glass animate-in fade-in slide-in-from-top-4 duration-700">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-900/20">
-            <span className="text-white font-bold text-lg">⌘</span>
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+            <span className="text-white font-bold text-lg">📊</span>
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-white tracking-tight">
-              Data Analyst
+            <h1 className="text-xl font-semibold text-gray-800 tracking-tight">
+              Veri Analisti
             </h1>
-            <p className="text-xs text-amber-500/80 flex items-center gap-1.5 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-              SQL Agent Active
+            <p className="text-xs text-gray-500 flex items-center gap-1.5 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              Çevrimiçi
             </p>
           </div>
         </div>
         <Button
           onClick={handleResetConversation}
           size="sm"
-          className="bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors"
+          className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-gray-300 transition-colors"
           title="Yeni konuşma başlat"
         >
           <RotateCcw size={16} className="mr-2" />
-          Sıfırla
+          Yeni Konuşma
         </Button>
       </header>
 
@@ -188,10 +188,10 @@ export const ChatInterface = () => {
         ))}
         {isLoading && (
           <div className="flex justify-start mb-6">
-             <div className="flex items-center gap-2 ml-14 bg-card px-4 py-3 rounded-2xl rounded-tl-none border border-amber-500/20">
-                <span className="w-2 h-2 bg-amber-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                <span className="w-2 h-2 bg-orange-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                <span className="w-2 h-2 bg-red-500 rounded-full animate-bounce"></span>
+             <div className="flex items-center gap-2 ml-14 bg-white px-4 py-3 rounded-2xl rounded-tl-none border border-gray-200 shadow-sm">
+                <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                <span className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></span>
              </div>
           </div>
         )}

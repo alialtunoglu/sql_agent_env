@@ -109,7 +109,7 @@ export default function FileUpload({ sessionId, onUploadSuccess }: FileUploadPro
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto mb-4">
+    <div className="w-full max-w-4xl mx-auto mb-4 bg-slate-700">
       {/* Database Status Card */}
       {databaseInfo ? (
         <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg p-4 mb-4">
