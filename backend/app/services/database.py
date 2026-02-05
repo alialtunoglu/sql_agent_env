@@ -3,10 +3,21 @@ from app.core.config import DB_PATH
 import json
 import os
 
-def get_db():
-    """Veritabanı bağlantı nesnesini döndürür."""
+def get_db(db_path: str = None):
+    """
+    Veritabanı bağlantı nesnesini döndürür.
+    
+    Args:
+        db_path: Custom database path. If None, uses default Chinook DB.
+    
+    Returns:
+        SQLDatabase connection object
+    """
+    if db_path is None:
+        db_path = DB_PATH
+    
     # SQLite için URI formatı
-    db_uri = f"sqlite:///{DB_PATH}"
+    db_uri = f"sqlite:///{db_path}"
     return SQLDatabase.from_uri(db_uri)
 
 def get_schema_metadata():

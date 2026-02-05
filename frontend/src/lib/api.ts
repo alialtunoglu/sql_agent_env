@@ -27,6 +27,29 @@ export function resetSession(): void {
   localStorage.removeItem(SESSION_STORAGE_KEY);
 }
 
+/**
+ * Chat history'yi backend'den çek
+ */
+export async function getChatHistory(sessionId: string): Promise<any> {
+  try {
+    const response = await fetch(`${API_URL}/chat-history?session_id=${sessionId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch chat history');
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching chat history:', error);
+    return { messages: [], count: 0 };
+  }
+}
+
 export async function sendMessage(query: string, sessionId?: string): Promise<ChatResponse> {
   const activeSessionId = sessionId || getOrCreateSessionId();
   
@@ -43,6 +66,84 @@ export async function sendMessage(query: string, sessionId?: string): Promise<Ch
 
   if (!response.ok) {
     throw new Error('Network response was not ok');
+  }
+
+  return response.json();
+}
+
+/**
+ * Upload CSV or Excel file
+ */
+export async function uploadFile(file: File, sessionId: string): Promise<any> {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await fetch(`${API_URL}/upload?session_id=${sessionId}`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'File upload failed');
+  }
+
+  return response.json();
+}
+
+/**
+ * Get database status for session
+ */
+export async function getDatabaseStatus(sessionId: string): Promise<any> {
+  const response = await fetch(`${API_URL}/database-status?session_id=${sessionId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to get database status');
+  }
+
+  return response.json();
+}
+
+/**
+ * Delete user's uploaded database
+ */
+export async function deleteDatabase(sessionId: string): Promise<void> {
+  const response = await fetch(`${API_URL}/database?session_id=${sessionId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to delete database');
+  }
+}
+
+/**
+ * Execute user-approved SQL query
+ */
+export async function executeSql(sqlQuery: string, sessionId: string): Promise<any> {
+  const response = await fetch(`${API_URL}/execute-sql`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      sql_query: sqlQuery,
+      session_id: sessionId
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'SQL execution failed');
   }
 
   return response.json();
