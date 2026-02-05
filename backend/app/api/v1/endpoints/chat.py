@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.models import ChatRequest, ChatResponse
+from app.models import ChatRequest, ChatResponse, ExecuteSQLRequest, ExecuteSQLResponse
 from app.services.agent import build_agent
 from app.services.memory import create_memory_backend, AbstractChatMemory
 from app.services.user_database import get_user_database_service
@@ -9,6 +9,7 @@ import re
 import uuid
 from typing import Dict
 from langchain_core.messages import HumanMessage, AIMessage
+from langchain_community.utilities import SQLDatabase
 
 router = APIRouter()
 
@@ -132,7 +133,8 @@ async def chat(request: ChatRequest):
             answer=cleaned_answer,
             session_id=session_id,
             chart_data=chart_data,
-            sql_query=sql_query
+            sql_query=sql_query,
+            requires_approval=False  # Auto-executed by agent
         )
         
     except Exception as e:
@@ -142,5 +144,70 @@ async def chat(request: ChatRequest):
         return ChatResponse(
             answer="Bir hata oluştu.",
             session_id=request.session_id or str(uuid.uuid4()),
+            error=str(e)
+        )
+
+
+@router.post("/execute-sql", response_model=ExecuteSQLResponse)
+async def execute_sql(request: ExecuteSQLRequest):
+    """
+    Execute user-approved SQL query.
+    Provides a safety mechanism for reviewing SQL before execution.
+    """
+    try:
+        # Validate SQL - only allow SELECT statements
+        sql_upper = request.sql_query.strip().upper()
+        
+        # Security check: Block dangerous operations
+        dangerous_keywords = ['DROP', 'DELETE', 'UPDATE', 'INSERT', 'ALTER', 'CREATE', 'TRUNCATE', 'GRANT', 'REVOKE']
+        for keyword in dangerous_keywords:
+            if keyword in sql_upper:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Güvenlik nedeniyle {keyword} komutu engellenmiştir. Sadece SELECT sorguları çalıştırılabilir."
+                )
+        
+        if not sql_upper.startswith('SELECT'):
+            raise HTTPException(
+                status_code=400,
+                detail="Güvenlik nedeniyle sadece SELECT sorguları çalıştırılabilir."
+            )
+        
+        # Get appropriate database
+        user_db_service = get_user_database_service()
+        user_db_path = user_db_service.get_user_database_path(request.session_id)
+        
+        # Connect to database
+        if user_db_path:
+            db_uri = f"sqlite:///{user_db_path}"
+        else:
+            from app.core.config import DB_PATH
+            db_uri = f"sqlite:///{DB_PATH}"
+        
+        db = SQLDatabase.from_uri(db_uri)
+        
+        # Execute query
+        result = db.run(request.sql_query)
+        
+        # Parse result (typically comes as string)
+        row_count = 0
+        if result:
+            # Try to count rows (rough estimate)
+            lines = result.strip().split('\n')
+            row_count = max(0, len(lines) - 1)  # Exclude header
+        
+        return ExecuteSQLResponse(
+            success=True,
+            message=f"Sorgu başarıyla çalıştırıldı. {row_count} satır döndü.",
+            row_count=row_count,
+            chart_data=None  # Could be enhanced to auto-generate chart
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        return ExecuteSQLResponse(
+            success=False,
+            message="Sorgu çalıştırılamadı.",
             error=str(e)
         )

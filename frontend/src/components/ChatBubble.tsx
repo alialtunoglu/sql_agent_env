@@ -5,7 +5,9 @@ import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 import { Message } from '@/types';
 import { ChartRenderer } from './ChartRenderer';
+import SqlApprovalPanel from './SqlApprovalPanel';
 import { Bot, User } from 'lucide-react';
+import { getOrCreateSessionId } from '@/lib/api';
 
 interface ChatBubbleProps {
   message: Message;
@@ -46,6 +48,19 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
            {isAssistant && message.chartData && (
              <div className="mt-2 w-full animate-in fade-in zoom-in duration-300">
                <ChartRenderer data={message.chartData} />
+             </div>
+           )}
+           
+           {/* SQL Approval Panel (Only for Assistant with SQL query that requires approval) */}
+           {isAssistant && message.sqlQuery && message.requiresApproval && (
+             <div className="mt-2 w-full animate-in fade-in zoom-in duration-300">
+               <SqlApprovalPanel 
+                 initialSql={message.sqlQuery} 
+                 sessionId={getOrCreateSessionId()}
+                 onExecutionComplete={(result) => {
+                   console.log('SQL execution completed:', result);
+                 }}
+               />
              </div>
            )}
         </div>

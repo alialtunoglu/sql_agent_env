@@ -102,3 +102,26 @@ export async function deleteDatabase(sessionId: string): Promise<void> {
     throw new Error(errorData.detail || 'Failed to delete database');
   }
 }
+
+/**
+ * Execute user-approved SQL query
+ */
+export async function executeSql(sqlQuery: string, sessionId: string): Promise<any> {
+  const response = await fetch(`${API_URL}/execute-sql`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      sql_query: sqlQuery,
+      session_id: sessionId
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'SQL execution failed');
+  }
+
+  return response.json();
+}

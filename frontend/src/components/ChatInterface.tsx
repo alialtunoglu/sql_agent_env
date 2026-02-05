@@ -97,7 +97,9 @@ export const ChatInterface = () => {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: response.answer,
-        chartData: response.chart_data
+        chartData: response.chart_data,
+        sqlQuery: response.sql_query,
+        requiresApproval: response.requires_approval
       };
 
       setMessages(prev => [...prev, botMessage]);
