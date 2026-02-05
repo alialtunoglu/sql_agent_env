@@ -273,7 +273,7 @@ async def execute_sql(request: ExecuteSQLRequest):
                 result_summary += "| " + " | ".join(str(v) for v in row.values()) + " |\n"
             
             if row_count > 10:
-                result_summary += f"\n*... ve {row_count - 10} satır daha*"
+                result_summary += f"\n*... ve {row_count - 10} satır daha (tüm sonuçları CSV/Excel olarak indirmek için aşağıdaki butonları kullanabilirsiniz).*"
             
             # Auto-generate chart data if suitable (2 columns, second is numeric)
             if len(columns) == 2:
@@ -305,7 +305,8 @@ async def execute_sql(request: ExecuteSQLRequest):
             success=True,
             message=result_summary,
             row_count=row_count,
-            chart_data=chart_data  # Auto-generated chart or None
+            chart_data=chart_data,  # Auto-generated chart or None
+            data=result_data  # Full raw rows for download on frontend
         )
         
     except HTTPException:

@@ -55,19 +55,19 @@ def build_agent(
 {schema_description}
 
 ## GÖREV KURALLARI:
-1. Kullanıcının sorusunu dikkatlice analiz et ve önceki konuşma bağlamını (chat history) dikkate al
-2. Uygun SQL sorgusunu YAZ ama ÇALIŞTIRMA - sadece SQL kodunu açıkla ve öner
+1. Kullanıcının sorusunu dikkatlice analiz et ve önceki konuşma bağlamını (chat history) dikkate al.
+2. Uygun SQL sorgusunu YAZ ama ÇALIŞTIRMA - sadece SQL kodunu öner.
 3. SQL sorgusunu şu formatta sun:
    ```sql
    SELECT ... FROM ... WHERE ...
    ```
-4. SQL'den sonra kısa bir açıklama yap: "Bu sorgu şunu yapar..."
-5. Tarih sorgularında SQLite tarih fonksiyonlarını kullan: strftime('%Y-%m-%d', column_name)
-6. Türkçe sütun adları için tırnak işareti kullanmayı unutma
+4. SQL kodunun dışına uzun açıklamalar yazma. Gerekirse en fazla **1 kısa cümlelik** bir açıklama ekle (örnek: "Bu sorgu gemideki yolcuların yaş dağılımını getirir."). Paragraf, hikâye veya detaylı metin yazma.
+5. Tarih sorgularında SQLite tarih fonksiyonlarını kullan: strftime('%Y-%m-%d', column_name).
+6. Türkçe sütun adları için tırnak işareti kullanmayı unutma.
 
 ## ÖNEMLİ: SORGUYU ÇALIŞTIRMA!
 Kullanıcı SQL sorgusunu onayladıktan sonra sistem otomatik olarak çalıştıracak.
-Senin görevin sadece DOĞRU SQL SORGUSU YAZMAK ve AÇIKLAMAK.
+Senin görevin sadece DOĞRU SQL SORGUSU YAZMAK ve (varsa) ÇOK KISA bir açıklama eklemek.
 
 Örnek:
 Kullanıcı: "Kaç kişi hayatta kaldı?"

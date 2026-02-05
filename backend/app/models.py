@@ -33,4 +33,5 @@ class ExecuteSQLResponse(BaseModel):
     chart_data: Optional[List[Dict[str, Any]]] = None
     chart_type: Optional[str] = None
     row_count: Optional[int] = None
+    data: Optional[List[Dict[str, Any]]] = None  # Full result set for export/download
     error: Optional[str] = None

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Play, Edit2, Copy, Check, AlertTriangle } from 'lucide-react';
+import { Play, Edit2, Copy, Check, AlertTriangle, Download } from 'lucide-react';
 import { executeSql } from '@/lib/api';
+import { exportToCSV, exportToExcel, exportToJSON } from '@/lib/export';
 
 interface SqlApprovalPanelProps {
   initialSql: string;
@@ -112,32 +113,67 @@ export default function SqlApprovalPanel({
 
         {/* Result Display */}
         {result && (
-          <div
-            className={`mt-3 p-3 rounded-lg flex items-start space-x-2 ${
-              result.success
-                ? 'bg-green-500/10 border border-green-500/30'
-                : 'bg-red-500/10 border border-red-500/30'
-            }`}
-          >
-            {result.success ? (
-              <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-            ) : (
-              <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-            )}
-            <div className="flex-1">
-              <p
-                className={`text-sm ${
-                  result.success ? 'text-green-300' : 'text-red-300'
-                }`}
-              >
-                {result.message || result.error}
-              </p>
-              {result.row_count !== undefined && (
-                <p className="text-xs text-gray-400 mt-1">
-                  Dönen satır sayısı: {result.row_count}
-                </p>
+          <div className="mt-3 space-y-2">
+            <div
+              className={`p-3 rounded-lg flex items-start space-x-2 ${
+                result.success
+                  ? 'bg-green-500/10 border border-green-500/30'
+                  : 'bg-red-500/10 border border-red-500/30'
+              }`}
+            >
+              {result.success ? (
+                <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+              ) : (
+                <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
               )}
+              <div className="flex-1">
+                <p
+                  className={`text-sm ${
+                    result.success ? 'text-green-300' : 'text-red-300'
+                  }`}
+                >
+                  {result.message || result.error}
+                </p>
+                {result.row_count !== undefined && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Dönen satır sayısı: {result.row_count}
+                  </p>
+                )}
+              </div>
             </div>
+
+            {/* Export buttons for full result set */}
+            {result.success && Array.isArray(result.data) && result.data.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-gray-400 mr-2">
+                  Tüm sonuçları indir:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => exportToCSV(result.data, 'query-results.csv')}
+                  className="inline-flex items-center px-2.5 py-1.5 text-xs rounded-md bg-gray-800 hover:bg-gray-700 text-gray-100 border border-gray-700 transition-colors"
+                >
+                  <Download className="w-3 h-3 mr-1" />
+                  CSV
+                </button>
+                <button
+                  type="button"
+                  onClick={() => exportToExcel(result.data, 'query-results.xlsx', 'Results')}
+                  className="inline-flex items-center px-2.5 py-1.5 text-xs rounded-md bg-gray-800 hover:bg-gray-700 text-gray-100 border border-gray-700 transition-colors"
+                >
+                  <Download className="w-3 h-3 mr-1" />
+                  Excel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => exportToJSON(result.data, 'query-results.json')}
+                  className="inline-flex items-center px-2.5 py-1.5 text-xs rounded-md bg-gray-800 hover:bg-gray-700 text-gray-100 border border-gray-700 transition-colors"
+                >
+                  <Download className="w-3 h-3 mr-1" />
+                  JSON
+                </button>
+              </div>
+            )}
           </div>
         )}
 
