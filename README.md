@@ -2,7 +2,7 @@
 
 Modern, kullanıcı dostu bir SQL veri analisti asistanı. Doğal dil ile veritabanı sorguları oluşturun ve sonuçları görselleştirin.
 
-## 🎯 Özellikler
+## Özellikler
 
 - **Doğal Dil Sorguları**: Türkçe sorularınızı SQL sorgularına dönüştürür
 - **Görselleştirme**: Sorgu sonuçlarını grafiklerle görselleştirin
@@ -24,7 +24,7 @@ Modern, kullanıcı dostu bir SQL veri analisti asistanı. Doğal dil ile verita
 ### Veri Yükleme
 ![Veri Yükleme](screenshots/file-upload.png)
 
-## 🚀 Kurulum
+## Kurulum
 
 ### 1. Backend Kurulumu
 
@@ -150,13 +150,13 @@ Frontend `http://localhost:3000` adresinde çalışacak.
 ### Model Seçimi: Ollama vs Gemini
 
 #### Ollama (Önerilen - Yerel ve Ücretsiz)
-- ✅ **Avantajlar:**
+- **Avantajlar:**
   - Tamamen ücretsiz
   - Verileriniz yerelde kalır (gizlilik)
   - İnternet bağlantısı gerektirmez
   - Sınırsız kullanım
   
-- ⚠️ **Dezavantajlar:**
+- **Dezavantajlar:**
   - Yerel kaynak kullanımı (RAM/CPU)
   - Model indirme gerekir
   - Genellikle Gemini'den daha yavaş
@@ -178,12 +178,12 @@ OLLAMA_MODEL=llama3.1:8b
 ```
 
 #### Google Gemini (Bulut Tabanlı)
-- ✅ **Avantajlar:**
+- **Avantajlar:**
   - Çok hızlı yanıt süreleri
   - Güçlü model performansı
   - Yerel kaynak kullanmaz
   
-- ⚠️ **Dezavantajlar:**
+- **Dezavantajlar:**
   - API anahtarı gerekir
   - Ücretli (ücretsiz kotası var)
   - Veriler Google'a gönderilir
@@ -208,15 +208,15 @@ GOOGLE_API_KEY=your-api-key-here
 ## 🤖 Desteklenen LLM Modelleri
 
 ### Ollama (Yerel, Ücretsiz)
-- ✅ **llama3.1:8b** - Hızlı ve hafif (önerilen)
-- ✅ **llama3.1:70b** - Daha güçlü ama yavaş
-- ✅ **mistral:7b** - Alternatif seçenek
-- ✅ **qwen2.5:7b** - Alternatif seçenek
-- ✅ Diğer Ollama modelleri
+-  **llama3.1:8b** - Hızlı ve hafif (önerilen)
+-  **llama3.1:70b** - Daha güçlü ama yavaş
+-  **mistral:7b** - Alternatif seçenek
+-  **qwen2.5:7b** - Alternatif seçenek
+-  Diğer Ollama modelleri
 
 ### Google Gemini (Bulut, API anahtarı gerekir)
-- ✅ **gemini-2.0-flash-exp** - Hızlı ve güçlü
-- ✅ **gemini-2.5-flash** - Güncel model
+-  **gemini-2.0-flash-exp** - Hızlı ve güçlü
+-  **gemini-2.5-flash** - Güncel model
 
 ### Model Değiştirme
 
@@ -234,7 +234,7 @@ GOOGLE_API_KEY=your-api-key
 
 Değişikliklerin uygulanması için backend'i yeniden başlatın.
 
-## 🛠️ Teknolojiler
+##  Teknolojiler
 
 - **Backend**: FastAPI, LangChain, SQLite
 - **Frontend**: Next.js, React, TypeScript, Tailwind CSS
