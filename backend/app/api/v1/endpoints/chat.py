@@ -54,8 +54,12 @@ async def chat(request: ChatRequest):
         # Mevcut chat history'yi al
         chat_history = memory_backend.get_messages(session_id)
         
-        # Agent'ı chat history ile oluştur
-        agent, _ = build_agent(chat_history)
+        # Agent'ı chat history ve RAG ile oluştur
+        agent, _ = build_agent(
+            chat_history=chat_history,
+            user_query=request.query,
+            use_rag=True
+        )
         
         # Ajanı çalıştır
         result = agent.invoke({"input": request.query})
